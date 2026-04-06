@@ -257,21 +257,39 @@
             letter-spacing: 2px;
         }
 
-        /* Diagnostic HUD */
+        #dna-status {
+            position: fixed;
+            top: 150px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            background: rgba(0, 255, 136, 0.2);
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            display: none;
+            z-index: 100;
+            pointer-events: none;
+            backdrop-filter: blur(5px);
+        }
+
         #diagnostic-hud {
             position: absolute;
             bottom: 60px;
             left: 20px;
-            font-family: monospace;
-            font-size: 0.7rem;
-            color: rgba(255, 0, 0, 0.8);
-            background: rgba(0, 0, 0, 0.5);
-            padding: 5px 10px;
+            background: rgba(255, 0, 0, 0.2);
+            padding: 10px;
             border-radius: 5px;
-            pointer-events: none;
-            z-index: 100;
-            max-width: 80%;
+            font-family: monospace;
+            font-size: 10px;
+            color: #ff5555;
             display: none;
+            max-width: 250px;
+            overflow-wrap: break-word;
+            z-index: 1000;
         }
 
         #particles-js {
@@ -339,6 +357,7 @@
         </div>
 
         <canvas id="gameCanvas"></canvas>
+        <div id="dna-status">🧬 DNA UPDATED</div>
         <div id="diagnostic-hud"></div>
     </div>
 
@@ -385,7 +404,14 @@
         let gensWithoutImprovement = 0;
         let isShowcaseMode = false;
         let showcaseType = 'both'; // 'super', 'noob', or 'both'
-        let savedChampionDNA = JSON.parse(localStorage.getItem('bestDNA')) || null;
+        
+        // Master Suite DNA: Optimized for 'God Mode' precision
+        const MASTER_DNA = { 
+            weights: [28.2, 3.8, 0.12], 
+            bias: -0.65 
+        };
+        
+        let savedChampionDNA = JSON.parse(localStorage.getItem('bestDNA')) || MASTER_DNA;
 
         // Diagnostic: Error Catcher
         window.onerror = function (msg, url, line, col, error) {
@@ -509,15 +535,20 @@
             const sortedBirds = [...birds].sort((a, b) => b.fitness - a.fitness);
             const currentBestFitness = sortedBirds[0].fitness;
 
-            // Auto-Save Champion DNA
+            // Persistent Auto-Save (Incremental)
             if (currentBestFitness > bestFitnessEver) {
                 bestFitnessEver = currentBestFitness;
                 gensWithoutImprovement = 0;
-                // Only save birds that have actually cleared a pipe to preserve quality
-                if (currentBestFitness > 1000) {
-                    savedChampionDNA = { weights: [...sortedBirds[0].weights], bias: sortedBirds[0].bias };
-                    localStorage.setItem('bestDNA', JSON.stringify(savedChampionDNA));
-                    console.log("Champion DNA Saved!", savedChampionDNA);
+                
+                // Save the brain immediately to localStorage
+                savedChampionDNA = { weights: [...sortedBirds[0].weights], bias: sortedBirds[0].bias };
+                localStorage.setItem('bestDNA', JSON.stringify(savedChampionDNA));
+                
+                // Visual Confirmation Flash
+                const dnaStatus = document.getElementById('dna-status');
+                if (dnaStatus) {
+                    dnaStatus.style.display = 'block';
+                    setTimeout(() => dnaStatus.style.display = 'none', 1500);
                 }
             } else {
                 gensWithoutImprovement++;
@@ -842,10 +873,7 @@
         document.getElementById('over-noob-btn').addEventListener('click', () => runShowcase('noob'));
 
         function runShowcase(type) {
-            if (type === 'super' && !savedChampionDNA) {
-                alert("No Champion DNA saved yet! Let the AI train until it hits a 1000+ score.");
-                return;
-            }
+            // No alert needed, as MASTER_DNA is now hard-coded as a fallback
             isShowcaseMode = true;
             showcaseType = type;
             init();
