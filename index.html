@@ -74,6 +74,44 @@
             transition: opacity 0.3s ease;
         }
 
+        #start-screen {
+            background: radial-gradient(circle at center, rgba(0, 255, 136, 0.15) 0%, rgba(13, 13, 13, 1) 70%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .hero-bird {
+            width: 80px;
+            height: 60px;
+            margin-bottom: 20px;
+            position: relative;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+        }
+
+        .hero-bird::before {
+            content: '🦜';
+            font-size: 50px;
+            filter: drop-shadow(0 0 15px var(--primary));
+        }
+
+        .header h1 {
+            font-size: 3.5rem;
+            margin: 0;
+            background: linear-gradient(45deg, #00ff88, #ff3366, #00d2ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 2px;
+            font-weight: 900;
+        }
+
         .overlay.hidden {
             opacity: 0;
             pointer-events: none;
@@ -227,16 +265,23 @@
         }
 
         .dna-btn {
-            background: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             color: white;
             padding: 12px 30px;
             font-size: 0.8rem;
             cursor: pointer;
-            border-radius: 5px;
+            border-radius: 30px;
             text-transform: uppercase;
             letter-spacing: 2px;
-            transition: all 0.2s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+        }
+
+        .dna-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: var(--primary);
+            transform: scale(1.05);
         }
 
         .dna-btn.gold {
@@ -244,13 +289,17 @@
             color: var(--secondary);
         }
 
-        .dna-btn:hover {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: white;
+        #start-btn {
+            background: linear-gradient(45deg, var(--primary), #00d2ff);
+            color: #0d0d0d;
+            border: none;
+            font-weight: 900;
+            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.3);
         }
 
-        .dna-btn.gold:hover {
-            background: rgba(243, 156, 18, 0.1);
+        #start-btn:hover {
+            box-shadow: 0 15px 40px rgba(0, 255, 136, 0.5);
+            transform: scale(1.1);
         }
 
         .btn-row {
@@ -335,24 +384,26 @@
 
         <!-- Start Screen -->
         <div id="start-screen" class="overlay">
+        <div class="hero-bird"></div>
+        
         <div class="header">
-            <h1 style="font-size: 3rem; margin-bottom: 0px;">AUTONOMA</h1>
-            <div style="text-transform: uppercase; letter-spacing: 5px; font-size: 0.7rem; color: var(--primary); margin-top: 10px;">
-                Quetzal Edition
+            <h1>NEON BIRD AI</h1>
+            <div style="text-transform: uppercase; letter-spacing: 8px; font-size: 0.8rem; color: rgba(255,255,255,0.6); margin-top: 5px; font-weight: 300;">
+                Resplendent Quetzal Series
             </div>
         </div>
         
-        <div id="dna-bank">
-            <button class="dna-btn" id="start-btn" style="background: var(--primary); color: black; border: none; font-weight: bold; padding: 15px 40px; margin-bottom: 5px;">
-                Begin Evolution
+        <div id="dna-bank" style="margin-top: 40px;">
+            <button class="dna-btn" id="start-btn">
+                Begin Training
             </button>
-            <div class="btn-row">
-                <button class="dna-btn gold" id="watch-super-btn">Super</button>
+            <div class="btn-row" style="margin-top: 15px;">
+                <button class="dna-btn gold" id="watch-super-btn">Showcase</button>
                 <button class="dna-btn" id="watch-noob-btn">Random</button>
             </div>
         </div>
 
-        <div class="credits">AI EVOLUTION v2.2</div>
+        <div class="credits" style="bottom: 30px; opacity: 0.5;">QUETZAL ENGINE v2.5</div>
     </div>
 
         <!-- Game Over Screen -->
