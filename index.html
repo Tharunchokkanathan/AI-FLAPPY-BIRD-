@@ -220,32 +220,43 @@
         }
 
         #dna-bank {
-            margin-top: 15px;
             display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            justify-content: center;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 30px;
         }
 
         .dna-btn {
-            padding: 8px 16px;
-            font-size: 0.8rem;
-            background: var(--glass);
-            border: 1px solid var(--glass-border);
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
             color: white;
-            border-radius: 8px;
+            padding: 12px 30px;
+            font-size: 0.8rem;
             cursor: pointer;
+            border-radius: 5px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
             transition: all 0.2s;
         }
 
-        .dna-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-            border-color: var(--primary);
+        .dna-btn.gold {
+            border-color: var(--secondary);
+            color: var(--secondary);
         }
 
-        .dna-btn.gold {
-            border-color: #ffd700;
-            color: #ffd700;
+        .dna-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: white;
+        }
+
+        .dna-btn.gold:hover {
+            background: rgba(243, 156, 18, 0.1);
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
         }
 
         .credits {
@@ -324,17 +335,25 @@
 
         <!-- Start Screen -->
         <div id="start-screen" class="overlay">
-            <h1>NEON BIRD AI</h1>
-            <p>Observing autonomous performance</p>
-            <button type="button" class="btn" id="start-btn">Start Game</button>
-            <div style="margin-top: 20px; font-size: 0.9rem; color: rgba(255,255,255,0.5)">
-                The AI will navigate autonomously.
-            </div>
-            <div id="dna-bank">
-                <button class="dna-btn gold" id="watch-super-btn">Watch Super Bird</button>
-                <button class="dna-btn" id="watch-noob-btn">Watch Random Bird</button>
+        <div class="header">
+            <h1 style="font-size: 3rem; margin-bottom: 0px;">AUTONOMA</h1>
+            <div style="text-transform: uppercase; letter-spacing: 5px; font-size: 0.7rem; color: var(--primary); margin-top: 10px;">
+                Quetzal Edition
             </div>
         </div>
+        
+        <div id="dna-bank">
+            <button class="dna-btn" id="start-btn" style="background: var(--primary); color: black; border: none; font-weight: bold; padding: 15px 40px; margin-bottom: 5px;">
+                Begin Evolution
+            </button>
+            <div class="btn-row">
+                <button class="dna-btn gold" id="watch-super-btn">Super</button>
+                <button class="dna-btn" id="watch-noob-btn">Random</button>
+            </div>
+        </div>
+
+        <div class="credits">AI EVOLUTION v2.2</div>
+    </div>
 
         <!-- Game Over Screen -->
         <div id="game-over-screen" class="overlay hidden">
