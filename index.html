@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neon Bird AI | Autonomous Performance</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&display=swap');
+
+        :root {
+            --primary: #00ff88; /* Emerald Green */
+            --secondary: #ff2d55; /* Ruby Red */
+            --gold: #ffd700;
+            --accent: #7000ff;
+            --bg-dark: #050801; /* Jungle Black */
+            --glass: rgba(0, 0, 0, 0.6);
+            --glass-border: rgba(0, 255, 136, 0.2);
+            --neon-blue: 0 0 15px rgba(0, 242, 255, 0.5);
+            --neon-purple: 0 0 15px rgba(112, 0, 255, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+            user-select: none;
+        }
+
+        body {
+            background-color: #000;
+            color: #fff;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100%;
+            max-width: 450px;
+            height: 80vh;
+            max-height: 700px;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5), var(--neon-purple);
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+            border: 1px solid var(--glass-border);
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            z-index: 10;
+            transition: opacity 0.3s ease;
+        }
+
+        .overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: var(--neon-blue);
+            letter-spacing: -1px;
+        }
+
+        p {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 2rem;
+        }
+
+        .btn {
+            padding: 14px 32px;
+            font-size: 1.2rem;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3), var(--neon-purple);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 15px 25px rgba(0, 0, 0, 0.4), var(--neon-blue);
+        }
+
+        .btn:active {
+            transform: translateY(1px) scale(0.98);
+        }
+
+        #score-display {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 3rem;
+            font-weight: 700;
+            z-index: 5;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #alive-counter {
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--primary);
+            background: var(--glass);
+            padding: 4px 16px;
+            border-radius: 20px;
+            margin-top: 10px;
+            border: 1px solid var(--glass-border);
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            pointer-events: auto;
+        }
+
+        #speed-toggle {
+            display: flex;
+            gap: 8px;
+            margin-left: 10px;
+        }
+
+        .speed-btn {
+            padding: 4px 10px;
+            font-size: 0.75rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .speed-btn:hover {
+            border-color: var(--primary);
+            background: rgba(0, 242, 255, 0.1);
+        }
+
+        .hud-label {
+            color: rgba(255, 255, 255, 0.4);
+            margin-right: 8px;
+            font-size: 0.8rem;
+        }
+
+        .stats-panel {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            text-align: center;
+            min-width: 200px;
+        }
+
+        .stats-label {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.6);
+            text-transform: uppercase;
+        }
+
+        .stats-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .speed-btn.active {
+            background: var(--primary);
+            color: #000;
+            border-color: var(--primary);
+            font-weight: bold;
+            box-shadow: 0 0 15px var(--primary);
+            transform: scale(1.1);
+        }
+
+        #speed-status {
+            font-size: 0.7rem;
+            color: var(--secondary);
+            margin-top: 5px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            display: none;
+        }
+
+        #dna-bank {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .dna-btn {
+            padding: 8px 16px;
+            font-size: 0.8rem;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .dna-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: var(--primary);
+        }
+
+        .dna-btn.gold {
+            border-color: #ffd700;
+            color: #ffd700;
+        }
+
+        .credits {
+            position: fixed;
+            bottom: 20px;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* Diagnostic HUD */
+        #diagnostic-hud {
+            position: absolute;
+            bottom: 60px;
+            left: 20px;
+            font-family: monospace;
+            font-size: 0.7rem;
+            color: rgba(255, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.5);
+            padding: 5px 10px;
+            border-radius: 5px;
+            pointer-events: none;
+            z-index: 100;
+            max-width: 80%;
+            display: none;
+        }
+
+        #particles-js {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle at center, #11111d 0%, #050505 100%);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="game-container">
+        <div id="score-display">
+            <span id="current-score">0</span>
+            <div id="alive-counter">
+                <span><span class="hud-label">Gen</span><span id="gen-count">1</span></span>
+                <span><span class="hud-label">Alive</span><span id="alive-count">35</span></span>
+                <div id="speed-toggle">
+                    <button class="speed-btn active" data-speed="1">1x</button>
+                    <button class="speed-btn" data-speed="8">8x</button>
+                    <button class="speed-btn" data-speed="16">16x</button>
+                    <button class="speed-btn" data-speed="24">24x</button>
+                </div>
+            </div>
+            <div id="speed-status">SIMULATION SCALED: 1x</div>
+        </div>
+
+        <!-- Start Screen -->
+        <div id="start-screen" class="overlay">
+            <h1>NEON BIRD AI</h1>
+            <p>Observing autonomous performance</p>
+            <button type="button" class="btn" id="start-btn">Start Game</button>
+            <div style="margin-top: 20px; font-size: 0.9rem; color: rgba(255,255,255,0.5)">
+                The AI will navigate autonomously.
+            </div>
+            <div id="dna-bank">
+                <button class="dna-btn gold" id="watch-super-btn">Watch Super Bird</button>
+                <button class="dna-btn" id="watch-noob-btn">Watch Random Bird</button>
+            </div>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="game-over-screen" class="overlay hidden">
+            <h1 id="over-title">CRASHED</h1>
+            <div class="stats-panel">
+                <div>
+                    <div class="stats-label">Best Fitness</div>
+                    <div id="final-score" class="stats-value">0</div>
+                </div>
+                <div style="margin-top: 10px;">
+                    <div class="stats-label">Generation</div>
+                    <div id="best-score" class="stats-value">1</div>
+                </div>
+            </div>
+            <button type="button" class="btn" id="restart-btn">Hard Reset (Gen 1)</button>
+            <div id="dna-bank">
+                <button class="dna-btn gold" id="over-super-btn">Watch Super Bird</button>
+                <button class="dna-btn" id="over-noob-btn">Watch Random Bird</button>
+            </div>
+        </div>
+
+        <canvas id="gameCanvas"></canvas>
+        <div id="diagnostic-hud"></div>
+    </div>
+
+    <div class="credits">Antigravity AI Edition</div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const currentScoreSpan = document.getElementById('current-score');
+        const aliveCountSpan = document.getElementById('alive-count');
+        const genCountSpan = document.getElementById('gen-count');
+        const startScreen = document.getElementById('start-screen');
+        const gameOverScreen = document.getElementById('game-over-screen');
+        const startBtn = document.getElementById('start-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const finalScoreLabel = document.getElementById('final-score');
+        const bestScoreLabel = document.getElementById('best-score');
+
+        // Game constants
+        const GRAVITY = 0.25;
+        const JUMP = -4.8;
+        const PIPE_SPEED = 2.5;
+        const PIPE_SPAWN_RATE = 100; // frames
+        const PIPE_GAP = 160;
+        const BIRD_COUNT = 20;
+        const BIRD_X = 50;
+        const MUTATION_RATE = 0.1;
+
+        // Game state
+        let birds = [];
+        let generation = 1;
+
+        let pipes = [];
+        let score = 0;
+        let bestScore = localStorage.getItem('bestScore') || 0;
+        let frameCount = 0;
+        let isGameOver = false;
+        let isStarted = false;
+        let transitionTimeout = null;
+        let failSafeTimeout = null;
+        let isTransitioning = false;
+        let timeScale = 1;
+        let bestFitnessEver = 0;
+        let gensWithoutImprovement = 0;
+        let isShowcaseMode = false;
+        let showcaseType = 'both'; // 'super', 'noob', or 'both'
+        let savedChampionDNA = JSON.parse(localStorage.getItem('bestDNA')) || null;
+
+        // Diagnostic: Error Catcher
+        window.onerror = function (msg, url, line, col, error) {
+            const hud = document.getElementById('diagnostic-hud');
+            hud.style.display = 'block';
+            hud.innerText = `ERR: ${msg} (L${line}:${col})`;
+            console.error("Simulation Error:", msg, "at line", line);
+            return false;
+        };
+
+        // Resize canvas to match container
+        function resize() {
+            const rect = canvas.getBoundingClientRect();
+            if (rect.width > 0 && rect.height > 0) {
+                canvas.width = rect.width;
+                canvas.height = rect.height;
+            }
+        }
+
+        window.addEventListener('resize', resize);
+        // Repeatedly try to resize in case of slow layout
+        setTimeout(resize, 100);
+        resize();
+
+        /**
+         * AI Decision Function
+         * @param {Object} bird - The bird instance
+         * @param {Object} inputs - { birdY, distToPipe, gapTop, gapBottom, birdVelocity }
+         * @returns {Number} 1 to jump, 0 to do nothing
+         */
+        function aiDecision(bird, inputs) {
+            // New "Relative" Input Math (Much faster to learn!)
+            // Center of the gap is 0, top of gap is -0.5, bottom is +0.5
+            const gapCenter = inputs.gapTop + (PIPE_GAP / 2);
+            const nRelativeGapY = (bird.y - gapCenter) / (canvas.height / 2);
+            const nBirdVel = bird.velocity / 10;
+            const nDist = inputs.distToPipe / canvas.width;
+
+            const weightedSum =
+                (nRelativeGapY * bird.weights[0]) +
+                (nBirdVel * bird.weights[1]) +
+                (nDist * bird.weights[2]) +
+                bird.bias;
+
+            return weightedSum > 0 ? 1 : 0;
+        }
+
+        function init(nextGenBirds = null) {
+            console.log("Initializing generation...", nextGenBirds ? "Next Gen" : "Gen 1");
+
+            // Clear all transition states
+            isTransitioning = false;
+            if (transitionTimeout) clearTimeout(transitionTimeout);
+            if (failSafeTimeout) clearTimeout(failSafeTimeout);
+            transitionTimeout = null;
+            failSafeTimeout = null;
+
+            if (canvas.height === 0) resize();
+
+            if (nextGenBirds && nextGenBirds.length > 0) {
+                birds = nextGenBirds;
+                generation++;
+            } else if (isShowcaseMode) {
+                // Showcase Mode Selection
+                generation = "SHOWCASE";
+                birds = [];
+                
+                if (showcaseType === 'super' || showcaseType === 'both') {
+                    if (savedChampionDNA) {
+                        birds.push({
+                            y: canvas.height/2, velocity: 0, radius: 12, rotation: 0, alive: true, fitness: 0,
+                            weights: [...savedChampionDNA.weights], bias: savedChampionDNA.bias, isGolden: true
+                        });
+                    }
+                }
+                
+                if (showcaseType === 'noob' || showcaseType === 'both') {
+                    birds.push({
+                        y: canvas.height/2, velocity: 0, radius: 12, rotation: 0, alive: true, fitness: 0,
+                        weights: Array.from({length: 3}, () => Math.random() * 2 - 1), bias: Math.random() * 2 - 1, isNoob: true
+                    });
+                }
+            } else {
+                birds = [];
+                generation = 1;
+                for (let i = 0; i < BIRD_COUNT; i++) {
+                    birds.push({
+                        y: canvas.height / 2 || 300,
+                        velocity: 0,
+                        radius: 12,
+                        rotation: 0,
+                        alive: true,
+                        fitness: 0,
+                        weights: Array.from({ length: 3 }, () => Math.random() * 2 - 1),
+                        bias: Math.random() * 2 - 1,
+                        history: [] // For the long tail feathers
+                    });
+                }
+            }
+
+            pipes = [];
+            score = 0;
+            frameCount = 0;
+            isGameOver = false;
+            gameOverScreen.classList.add('hidden');
+            updateHUD();
+        }
+
+        function updateHUD() {
+            currentScoreSpan.innerText = score;
+            genCountSpan.innerText = generation;
+            const alive = birds.filter(b => b.alive).length;
+            aliveCountSpan.innerText = alive;
+            return alive;
+        }
+
+        function nextGeneration() {
+            if (isTransitioning) return;
+            isTransitioning = true;
+
+            const sortedBirds = [...birds].sort((a, b) => b.fitness - a.fitness);
+            const currentBestFitness = sortedBirds[0].fitness;
+
+            // Auto-Save Champion DNA
+            if (currentBestFitness > bestFitnessEver) {
+                bestFitnessEver = currentBestFitness;
+                gensWithoutImprovement = 0;
+                // Only save birds that have actually cleared a pipe to preserve quality
+                if (currentBestFitness > 1000) {
+                    savedChampionDNA = { weights: [...sortedBirds[0].weights], bias: sortedBirds[0].bias };
+                    localStorage.setItem('bestDNA', JSON.stringify(savedChampionDNA));
+                    console.log("Champion DNA Saved!", savedChampionDNA);
+                }
+            } else {
+                gensWithoutImprovement++;
+            }
+
+            // In Showcase mode, just restart the showdown
+            if (isShowcaseMode) {
+                init();
+                return;
+            }
+
+            // If stuck for 5+ generations, get aggressive (Simulated Annealing)
+            const dynamicMutationRate = gensWithoutImprovement > 5 ? MUTATION_RATE * 2 : MUTATION_RATE;
+            const mutationScale = gensWithoutImprovement > 5 ? 0.4 : 0.2;
+
+            const elites = sortedBirds.slice(0, 4); // Top 4 keepers
+            const nextGen = [];
+
+            for (let i = 0; i < BIRD_COUNT; i++) {
+                let newBird;
+                if (i < 4 && elites[i]) {
+                    newBird = { weights: [...elites[i].weights], bias: elites[i].bias };
+                } else {
+                    // Crossover
+                    const p1 = elites[Math.floor(Math.random() * elites.length)];
+                    const p2 = elites[Math.floor(Math.random() * elites.length)];
+                    const childWeights = p1.weights.map((w, idx) => Math.random() < 0.5 ? w : p2.weights[idx]);
+                    const childBias = Math.random() < 0.5 ? p1.bias : p2.bias;
+
+                    newBird = { weights: childWeights, bias: childBias };
+
+                    // Mutation with Dynamic Scaling
+                    newBird.weights = newBird.weights.map(w => 
+                        Math.random() < dynamicMutationRate ? w + (Math.random() - 0.5) * mutationScale : w
+                    );
+                    if (Math.random() < dynamicMutationRate) 
+                        newBird.bias += (Math.random() - 0.5) * mutationScale;
+                }
+
+                newBird.y = canvas.height / 2 || 300;
+                newBird.velocity = 0;
+                newBird.radius = 12;
+                newBird.alive = true;
+                newBird.fitness = 0;
+                newBird.rotation = 0;
+                nextGen.push(newBird);
+            }
+            init(nextGen);
+        }
+
+        // Draw functions
+        function drawBirds() {
+            birds.forEach((bird, index) => {
+                if (!bird.alive) return;
+
+                // 1. Draw Tail Feathers (Resplendent Quetzal signature)
+                if (bird.history && bird.history.length > 2) {
+                    ctx.beginPath();
+                    ctx.lineWidth = 4;
+                    ctx.lineCap = 'round';
+                    ctx.strokeStyle = bird.isGolden ? 'rgba(255, 215, 0, 0.4)' : 'rgba(0, 255, 136, 0.3)';
+                    ctx.moveTo(bird.history[0].x, bird.history[0].y);
+                    for(let i=1; i<bird.history.length; i++) {
+                        ctx.lineTo(bird.history[i].x, bird.history[i].y);
+                    }
+                    ctx.stroke();
+                }
+
+                ctx.save();
+                // Unified: Centered on BIRD_X
+                ctx.translate(BIRD_X, bird.y);
+
+                bird.rotation = Math.min(Math.PI / 4, Math.max(-Math.PI / 4, bird.velocity * 0.1));
+                ctx.rotate(bird.rotation);
+
+                ctx.shadowBlur = 15;
+                if (bird.isGolden) {
+                    ctx.shadowColor = '#ffd700';
+                } else if (bird.isNoob) {
+                    ctx.shadowColor = '#ff4500';
+                } else {
+                    ctx.shadowColor = `rgba(0, 255, 136, ${0.8})`;
+                }
+
+                // Body: Emerald & Ruby gradient
+                const grad = ctx.createRadialGradient(0, 0, 2, 0, 0, bird.radius);
+                grad.addColorStop(0, '#fff');
+                
+                if (bird.isGolden) {
+                    grad.addColorStop(1, '#ffd700');
+                } else if (bird.isNoob) {
+                    grad.addColorStop(1, '#ff4500');
+                } else {
+                    // Quetzal colors: Emerald Green + Ruby Red underbelly
+                    grad.addColorStop(0.6, '#00ff88');
+                    grad.addColorStop(1, '#ff2d55');
+                }
+                
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.arc(0, 0, bird.radius, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Eye
+                ctx.fillStyle = '#000';
+                ctx.beginPath();
+                ctx.arc(5, -4, 2, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.restore();
+            });
+        }
+
+        function drawPipes() {
+            pipes.forEach(pipe => {
+                // Ancient Stone Pillar style
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = 'rgba(0, 255, 136, 0.4)';
+
+                const pipeGrad = ctx.createLinearGradient(pipe.x, 0, pipe.x + pipe.width, 0);
+                pipeGrad.addColorStop(0, '#0a2a11'); // Dark Moss
+                pipeGrad.addColorStop(0.5, '#1e4a2a');
+                pipeGrad.addColorStop(1, '#0a2a11');
+                ctx.fillStyle = pipeGrad;
+
+                // Stone Pillar with Glowing "Ancient Runes"
+                ctx.fillRect(pipe.x, 0, pipe.width, pipe.topHeight);
+                ctx.fillStyle = 'rgba(0, 255, 136, 0.8)'; // Glowing Rune Color
+                ctx.fillRect(pipe.x + 10, pipe.topHeight/2, pipe.width - 20, 2); // Simple horizontal vine/rune
+
+                ctx.fillStyle = pipeGrad;
+                ctx.fillRect(pipe.x, pipe.topHeight + PIPE_GAP, pipe.width, canvas.height - (pipe.topHeight + PIPE_GAP));
+                ctx.fillStyle = 'rgba(0, 255, 136, 0.8)';
+                ctx.fillRect(pipe.x + 10, pipe.topHeight + PIPE_GAP + 50, pipe.width - 20, 2);
+            });
+            ctx.shadowBlur = 0;
+        }
+
+        function drawBackground() {
+            // Tropical Dust / Fireflies
+            ctx.fillStyle = 'rgba(0, 255, 136, 0.2)';
+            for (let i = 0; i < 30; i++) {
+                let x = (Math.sin(i + frameCount * 0.005) * canvas.width * 2 + canvas.width) % canvas.width;
+                let y = (Math.cos(i) * canvas.height * 2 + canvas.height) % canvas.height;
+                ctx.beginPath();
+                ctx.arc(x, y, 1.5, 0, Math.PI * 2); // Slightly larger fireflies
+                ctx.fill();
+            }
+        }
+
+        // Logic functions
+        function update() {
+            if (isGameOver || !isStarted || canvas.height === 0) return;
+
+            // Find next pipe for AI logic (shared by swarm)
+            const nextPipe = pipes.find(p => p.x + p.width > BIRD_X) || {
+                x: canvas.width + 100,
+                width: 50,
+                topHeight: canvas.height / 2 - 80
+            };
+
+            const gapTop = nextPipe.topHeight;
+            const gapBottom = nextPipe.topHeight + PIPE_GAP;
+
+            // Update each bird
+            birds.forEach(bird => {
+                if (!bird.alive) return;
+
+                // Bird physics
+                bird.velocity += GRAVITY;
+                bird.y += bird.velocity;
+                bird.fitness++; 
+
+                // Track history for tail feathers (limited to last 15 frames)
+                if (!bird.history) bird.history = [];
+                bird.history.unshift({x: BIRD_X, y: bird.y});
+                if (bird.history.length > 15) bird.history.pop();
+
+                // AI Decision Making (Strictly Weighted Sum)
+                const aiInputs = {
+                    birdY: bird.y,
+                    birdVelocity: bird.velocity,
+                    distToPipe: nextPipe.x - BIRD_X,
+                    gapTop: gapTop,
+                    gapBottom: gapBottom
+                };
+
+                if (aiDecision(bird, aiInputs) === 1) {
+                    bird.velocity = JUMP; // Individual jump
+                }
+
+                // Collision detection per bird (Now unified with visual center)
+                const birdBox = { 
+                    x: BIRD_X - bird.radius, 
+                    y: bird.y - bird.radius, 
+                    w: bird.radius * 2, 
+                    h: bird.radius * 2 
+                };
+
+                let hit = false;
+                pipes.forEach(pipe => {
+                    const topPipe = { x: pipe.x, y: 0, w: pipe.width, h: pipe.topHeight };
+                    const bottomPipe = { x: pipe.x, y: pipe.topHeight + PIPE_GAP, w: pipe.width, h: canvas.height };
+                    if (checkCollision(birdBox, topPipe) || checkCollision(birdBox, bottomPipe)) hit = true;
+                });
+
+                if (bird.y + bird.radius > canvas.height || bird.y - bird.radius < 0) hit = true;
+
+                if (hit) {
+                    bird.alive = false;
+                    updateHUD();
+                }
+            });
+
+            // Collective Next Gen Transition
+            if (birds.length > 0 && birds.every(b => !b.alive)) {
+                if (!isGameOver && !isTransitioning) {
+                    isGameOver = true;
+
+                    // Show crashed screen with data
+                    const maxFitness = Math.max(...birds.map(b => b.fitness));
+                    finalScoreLabel.innerText = Math.round(maxFitness);
+                    bestScoreLabel.innerText = generation;
+                    gameOverScreen.classList.remove('hidden');
+                    document.getElementById('over-title').innerText = "GENERATION " + generation + " OVER";
+
+                    // Fail-Safe
+                    failSafeTimeout = setTimeout(() => {
+                        console.warn("Fail-Safe Triggered");
+                        init();
+                    }, 4000);
+
+                    // Normal Transition
+                    transitionTimeout = setTimeout(() => {
+                        nextGeneration();
+                    }, 1200);
+                }
+            }
+
+            // Pipe management
+            if (frameCount % PIPE_SPAWN_RATE === 0) {
+                const minPipeHeight = 50;
+                const maxPipeHeight = canvas.height - PIPE_GAP - 50;
+                const topHeight = Math.floor(Math.random() * (maxPipeHeight - minPipeHeight + 1)) + minPipeHeight;
+                pipes.push({ x: canvas.width, topHeight: topHeight, width: 50, passed: false });
+            }
+
+            pipes.forEach(pipe => {
+                pipe.x -= PIPE_SPEED;
+                if (!pipe.passed && pipe.x + pipe.width < BIRD_X) {
+                    pipe.passed = true;
+                    score++;
+                    updateHUD();
+                    // Evolutionary Bonus: Reward passing a pipe significantly
+                    birds.forEach(b => { if(b.alive) b.fitness += 1000; });
+                }
+            });
+
+            pipes = pipes.filter(pipe => pipe.x + pipe.width > -20);
+            frameCount++;
+        }
+
+        function checkCollision(r1, r2) {
+            return r1.x < r2.x + r2.w &&
+                r1.x + r1.w > r2.x &&
+                r1.y < r2.y + r2.h &&
+                r1.y + r1.h > r2.y;
+        }
+
+        function showManualCrash() {
+            isGameOver = true;
+            if (score > bestScore) {
+                bestScore = score;
+                localStorage.setItem('bestScore', bestScore);
+            }
+            finalScoreLabel.innerText = score;
+            bestScoreLabel.innerText = bestScore;
+            gameOverScreen.classList.remove('hidden');
+        }
+
+        function jump() {
+            // Deprecated for multi-bird: Each bird jumps independently.
+        }
+
+        // Game Loop
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            drawBackground();
+            drawPipes();
+            drawBirds();
+            
+            // Run logic N times per frame for faster training
+            for (let i = 0; i < timeScale; i++) {
+                update();
+            }
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Initial setup for Spacebar to START the AI game
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && !isStarted && !isGameOver) {
+                e.preventDefault();
+                startGame();
+            }
+        });
+
+        startBtn.addEventListener('click', () => {
+            startBtn.blur();
+            startGame();
+        });
+        restartBtn.addEventListener('click', () => {
+            restartBtn.blur();
+            isShowcaseMode = false;
+            init(); // Hard reset to Gen 1
+            gameOverScreen.classList.add('hidden');
+        });
+        
+        document.getElementById('watch-super-btn').addEventListener('click', () => runShowcase('super'));
+        document.getElementById('watch-noob-btn').addEventListener('click', () => runShowcase('noob'));
+        document.getElementById('over-super-btn').addEventListener('click', () => runShowcase('super'));
+        document.getElementById('over-noob-btn').addEventListener('click', () => runShowcase('noob'));
+
+        function runShowcase(type) {
+            if (type === 'super' && !savedChampionDNA) {
+                alert("No Champion DNA saved yet! Let the AI train until it hits a 1000+ score.");
+                return;
+            }
+            isShowcaseMode = true;
+            showcaseType = type;
+            init();
+            isStarted = true;
+            startScreen.classList.add('hidden');
+            gameOverScreen.classList.add('hidden');
+        }
+
+        const speedStatus = document.getElementById('speed-status');
+        document.querySelectorAll('.speed-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                timeScale = parseInt(btn.getAttribute('data-speed'));
+                
+                // Show status
+                speedStatus.innerText = `SIMULATION SCALED: ${timeScale}x`;
+                speedStatus.style.display = timeScale > 1 ? 'block' : 'none';
+            });
+        });
+
+        function startGame() {
+            init(); 
+            isStarted = true;
+            startScreen.classList.add('hidden');
+            gameOverScreen.classList.add('hidden');
+        }
+
+        // Start loop
+        gameLoop();
+    </script>
+</body>
+
+</html>
