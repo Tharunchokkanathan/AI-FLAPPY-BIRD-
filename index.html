@@ -464,7 +464,7 @@
         const PIPE_GAP = 160;
         const BIRD_COUNT = 20;
         const BIRD_X = 50;
-        const MUTATION_RATE = 0.1;
+        const MUTATION_RATE = 0.2;
 
         // Game state
         let birds = [];
@@ -641,9 +641,9 @@
                 return;
             }
 
-            // If stuck for 5+ generations, get aggressive (Simulated Annealing)
-            const dynamicMutationRate = gensWithoutImprovement > 5 ? MUTATION_RATE * 2 : MUTATION_RATE;
-            const mutationScale = gensWithoutImprovement > 5 ? 0.4 : 0.2;
+            // If stuck for 3+ generations, get aggressive (Simulated Annealing)
+            const dynamicMutationRate = gensWithoutImprovement > 3 ? MUTATION_RATE * 2.5 : MUTATION_RATE;
+            const mutationScale = gensWithoutImprovement > 3 ? 0.7 : 0.3;
 
             const elites = sortedBirds.slice(0, 4); // Top 4 keepers
             const nextGen = [];
