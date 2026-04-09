@@ -502,13 +502,11 @@
             return false;
         };
 
-        // Resize canvas to match container
+        // Resize canvas correctly: we lock the internal physics engine to 400x600 
+        // to prevent screen sizes from destroying the AI's neural weight formulas.
         function resize() {
-            const rect = canvas.getBoundingClientRect();
-            if (rect.width > 0 && rect.height > 0) {
-                canvas.width = rect.width;
-                canvas.height = rect.height;
-            }
+            canvas.width = 400;
+            canvas.height = 600;
         }
 
         window.addEventListener('resize', resize);
