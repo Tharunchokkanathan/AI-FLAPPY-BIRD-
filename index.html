@@ -480,7 +480,7 @@
         let failSafeTimeout = null;
         let isTransitioning = false;
         let timeScale = 1;
-        let bestFitnessEver = 0;
+        let bestFitnessEver = parseFloat(localStorage.getItem('bestFitnessEver')) || 0;
         let gensWithoutImprovement = 0;
         let isShowcaseMode = false;
         let showcaseType = 'both'; // 'super', 'noob', or 'both'
@@ -618,6 +618,7 @@
             // Persistent Auto-Save (Incremental)
             if (currentBestFitness > bestFitnessEver) {
                 bestFitnessEver = currentBestFitness;
+                localStorage.setItem('bestFitnessEver', bestFitnessEver);
                 gensWithoutImprovement = 0;
                 
                 // Save the brain immediately to localStorage
@@ -883,7 +884,17 @@
                     score++;
                     updateHUD();
                     // Evolutionary Bonus: Reward passing a pipe significantly
-                    birds.forEach(b => { if(b.alive) b.fitness += 1000; });
+                    birds.forEach(b => { 
+                        if(b.alive) {
+                            b.fitness += 1000; 
+                            if (b.fitness > bestFitnessEver && !isShowcaseMode) {
+                                bestFitnessEver = b.fitness;
+                                localStorage.setItem('bestFitnessEver', bestFitnessEver);
+                                savedChampionDNA = { weights: [...b.weights], bias: b.bias };
+                                localStorage.setItem('bestDNA', JSON.stringify(savedChampionDNA));
+                            }
+                        } 
+                    });
                 }
             });
 
